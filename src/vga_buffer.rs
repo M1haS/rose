@@ -142,6 +142,8 @@ impl fmt::Write for Writer {
     }
 }
 
+/* TESTS */
+
 #[test_case]
 fn test_println_simple() {
     println!("test_println_simple output");

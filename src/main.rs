@@ -13,7 +13,7 @@ pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     
     rose::init();
-    
+
     #[cfg(test)]
     test_main();
 

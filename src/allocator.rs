@@ -12,7 +12,7 @@ pub mod bump;
 pub mod linked_list;
 pub mod fixed_size_block;
 
-use self::{linked_list::LinkedListAllocator, fixed_size_block::FixedSizeBlockAllocator};
+use self::fixed_size_block::FixedSizeBlockAllocator;
 // use linked_list_allocator::LockedHeap;
 
 pub struct Locked<A> {
@@ -68,10 +68,11 @@ pub fn init_heap(
 pub struct Dummy;
 
 unsafe impl GlobalAlloc for Dummy {
-    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+    unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
         null_mut()
     }
-    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+    
+    unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {
         panic!("Dealloc never called")
     }
 }

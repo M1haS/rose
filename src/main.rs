@@ -5,24 +5,27 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+use bootloader::{entry_point, BootInfo};
 use rose::println;
+use x86_64::structures::paging::Page;
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+entry_point!(kernel_main);
+
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
+    use rose::memory::BootInfoFrameAllocator;
+
     println!("Hello World{}", "!");
-    
     rose::init();
 
-    use x86_64::registers::control::Cr3;
-
-    let (level_4_page_table, _) = Cr3::read();
-    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+    let mut frame_allocator = unsafe {
+        BootInfoFrameAllocator::init(&boot_info.memory_map)
+    };
 
     #[cfg(test)]
     test_main();
 
     println!("It did not crash!");
-    rose::hlt_loop();
+    rose::hlt_loop();   
 }
 
 /// This function is called on panic.

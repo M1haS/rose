@@ -6,12 +6,30 @@
 
 use core::panic::PanicInfo;
 use bootloader::{entry_point, BootInfo};
-use rose::{allocator, println};
+use rose::{allocator, process, println, print};
 use alloc::{boxed::Box, vec, vec::Vec, rc::Rc};
+use core::arch::asm;
 
 extern crate alloc;
 
 entry_point!(kernel_main);
+
+fn kernel_thread_main() {
+    // Launch another kernel thread
+    process::new_kthread(test_kernel_fn2);
+
+    loop {
+        print!("<< thread 1 >>");
+        x86_64::instructions::hlt();
+    }
+}
+
+fn test_kernel_fn2() {
+    loop {
+        print!("<< thread 2 >>");
+        x86_64::instructions::hlt();
+    }
+}
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use rose::memory::BootInfoFrameAllocator;
@@ -29,28 +47,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     allocator::init_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
 
-    // allocate a number on the heap
-    let heap_value = Box::new(41);
-    println!("heap_value at {:p}", heap_value);
-
-    // create a dynamically sized vector
-    let mut vec = Vec::new();
-    for i in 0..500 {
-        vec.push(i);
-    }
-    println!("vec at {:p}", vec.as_slice());
-
-    // create a reference counted vector -> will be freed when count reaches 0
-    let reference_counted = Rc::new(vec![1, 2, 3]);
-    let cloned_reference = reference_counted.clone();
-    println!("current reference count is {}", Rc::strong_count(&cloned_reference));
-    core::mem::drop(reference_counted);
-    println!("reference count is {} now", Rc::strong_count(&cloned_reference));
-
     #[cfg(test)]
     test_main();
 
     println!("It did not crash!");
+    process::new_kthread(kernel_thread_main);
     rose::hlt_loop();   
 }
 

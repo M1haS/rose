@@ -1,6 +1,8 @@
 #![no_std]
+#![feature(asm_sym)]
 #![feature(const_mut_refs)]
 #![cfg_attr(test, no_main)]
+#![feature(naked_functions)]
 #![feature(abi_x86_interrupt)]
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
@@ -16,6 +18,7 @@ pub mod interrupts;
 pub mod gdt;
 pub mod memory;
 pub mod allocator;
+pub mod process;
 
 #[cfg(test)]
 use bootloader::{entry_point, BootInfo};
